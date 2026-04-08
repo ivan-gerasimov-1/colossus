@@ -23,7 +23,7 @@ export default function ChatPage() {
 
 	const selectedConv = conversations?.find((c) => c._id === selectedConvId);
 	const otherName =
-		selectedConv?.other?.name ?? selectedConv?.other?.email ?? 'Чат';
+		selectedConv?.other?.name ?? selectedConv?.other?.publicId ?? 'Чат';
 
 	return (
 		<div className="h-screen flex overflow-hidden bg-background">

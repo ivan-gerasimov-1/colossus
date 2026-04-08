@@ -21,18 +21,17 @@ export const list = query({
 	},
 });
 
-export const findByEmail = query({
-	args: { email: v.string() },
-	handler: async (ctx, { email }) => {
+export const findByPublicId = query({
+	args: { publicId: v.string() },
+	handler: async (ctx, { publicId }) => {
 		const userId = await getAuthUserId(ctx);
 		if (userId === null) return null;
-		const all = await ctx.db.query('users').collect();
-		const found = all.find(
-			(u) =>
-				u._id !== userId &&
-				(u.email ?? '').toLowerCase() === email.toLowerCase().trim(),
-		);
-		return found ?? null;
+		const found = await ctx.db
+			.query('users')
+			.withIndex('publicId', (q) => q.eq('publicId', publicId))
+			.first();
+		if (!found || found._id === userId) return null;
+		return found;
 	},
 });
 
@@ -47,8 +46,8 @@ export const search = query({
 		return all.filter((u) => {
 			if (u._id === userId) return false;
 			const name = (u.name ?? '').toLowerCase();
-			const email = (u.email ?? '').toLowerCase();
-			return name.includes(lower) || email.includes(lower);
+			const publicId = (u.publicId ?? '').toLowerCase();
+			return name.includes(lower) || publicId.includes(lower);
 		});
 	},
 });

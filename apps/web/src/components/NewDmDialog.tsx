@@ -9,19 +9,21 @@ type Props = {
 };
 
 export default function NewDmDialog({ onClose, onSelect }: Props) {
-	const [email, setEmail] = useState('');
+	const [publicId, setPublicId] = useState('');
 	const [submitted, setSubmitted] = useState(false);
 	const [loading, setLoading] = useState(false);
 
 	const user = useQuery(
-		api.users.findByEmail,
-		submitted && email.trim().length > 0 ? { email: email.trim() } : 'skip',
+		api.users.findByPublicId,
+		submitted && publicId.trim().length > 0
+			? { publicId: publicId.trim() }
+			: 'skip',
 	);
 	const getOrCreate = useMutation(api.conversations.getOrCreate);
 
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
-		if (!email.trim()) return;
+		if (!publicId.trim()) return;
 		setSubmitted(true);
 	}
 
@@ -37,8 +39,8 @@ export default function NewDmDialog({ onClose, onSelect }: Props) {
 		}
 	}
 
-	function handleEmailChange(value: string) {
-		setEmail(value);
+	function handlePublicIdChange(value: string) {
+		setPublicId(value);
 		setSubmitted(false);
 	}
 
@@ -65,38 +67,38 @@ export default function NewDmDialog({ onClose, onSelect }: Props) {
 
 				<form onSubmit={handleSubmit} className="px-4 py-4 flex flex-col gap-3">
 					<div className="flex flex-col gap-1.5">
-						<label className="text-sm font-medium" htmlFor="dm-email">
-							Email
+						<label className="text-sm font-medium" htmlFor="dm-publicId">
+							Public ID
 						</label>
 						<input
-							id="dm-email"
+							id="dm-publicId"
 							autoFocus
-							type="email"
-							value={email}
-							onChange={(e) => handleEmailChange(e.target.value)}
-							placeholder="user@example.com"
+							type="text"
+							value={publicId}
+							onChange={(e) => handlePublicIdChange(e.target.value)}
+							placeholder="cosmic-nebula-42"
 							className="flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm outline-none focus-visible:ring-[3px] placeholder:text-muted-foreground"
 						/>
 					</div>
 
 					{notFound && (
 						<p className="text-sm text-destructive">
-							Пользователь с таким email не найден
+							Пользователь с таким public ID не найден
 						</p>
 					)}
 
 					{found && (
 						<div className="flex items-center gap-3 rounded-md border bg-muted/50 px-3 py-2.5">
 							<span className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold shrink-0">
-								{(user.name ?? user.email ?? '?').charAt(0).toUpperCase()}
+								{(user.name ?? user.publicId ?? '?').charAt(0).toUpperCase()}
 							</span>
 							<div className="min-w-0">
 								<p className="text-sm font-medium truncate">
-									{user.name ?? user.email}
+									{user.name ?? user.publicId}
 								</p>
 								{user.name && (
 									<p className="text-xs text-muted-foreground truncate">
-										{user.email}
+										@{user.publicId}
 									</p>
 								)}
 							</div>
@@ -106,7 +108,7 @@ export default function NewDmDialog({ onClose, onSelect }: Props) {
 					{!found ? (
 						<button
 							type="submit"
-							disabled={!email.trim()}
+							disabled={!publicId.trim()}
 							className="inline-flex items-center justify-center h-9 rounded-md bg-primary text-primary-foreground text-sm font-medium shadow-xs hover:bg-primary/90 disabled:opacity-50 transition-colors"
 						>
 							Найти

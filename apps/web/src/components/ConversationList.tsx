@@ -21,11 +21,11 @@ const THEMES: { value: Theme; label: string; icon: React.ReactNode }[] = [
 
 type UserDropdownProps = {
 	name: string;
-	email: string | undefined;
+	publicId: string;
 	initial: string;
 };
 
-function UserDropdown({ name, email, initial }: UserDropdownProps) {
+function UserDropdown({ name, publicId, initial }: UserDropdownProps) {
 	const { signOut } = useAuthActions();
 	const { theme, setTheme } = useTheme();
 	const [open, setOpen] = useState(false);
@@ -65,9 +65,9 @@ function UserDropdown({ name, email, initial }: UserDropdownProps) {
 					{/* User info */}
 					<div className="px-3 py-2.5 border-b">
 						<p className="text-xs font-semibold truncate">{name}</p>
-						{email && (
-							<p className="text-xs text-muted-foreground truncate">{email}</p>
-						)}
+						<p className="text-xs text-muted-foreground truncate">
+							@{publicId}
+						</p>
 					</div>
 
 					{/* Theme */}
@@ -117,13 +117,17 @@ export default function ConversationList({
 	const me = useQuery(api.users.me);
 	const conversations = useQuery(api.conversations.listMine);
 
-	const displayName = me?.name ?? me?.email ?? '...';
+	const displayName = me?.name ?? me?.publicId ?? '...';
 	const initial = displayName.charAt(0).toUpperCase();
 
 	return (
 		<aside className={`flex flex-col border-r bg-background ${className}`}>
 			<div className="px-3 h-14 border-b flex items-center shrink-0">
-				<UserDropdown name={displayName} email={me?.email} initial={initial} />
+				<UserDropdown
+					name={displayName}
+					publicId={me?.publicId ?? ''}
+					initial={initial}
+				/>
 				<button
 					onClick={onNewDm}
 					className="ml-auto inline-flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
@@ -145,7 +149,7 @@ export default function ConversationList({
 					</li>
 				)}
 				{conversations?.map((conv) => {
-					const name = conv.other?.name ?? conv.other?.email ?? 'Без имени';
+					const name = conv.other?.name ?? conv.other?.publicId ?? 'Без имени';
 					const isActive = selectedId === conv._id;
 					return (
 						<li key={conv._id}>

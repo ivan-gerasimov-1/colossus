@@ -44,7 +44,7 @@ export default function MessageList({ conversationId, myId }: Props) {
 		<div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
 			{messages.map((msg) => {
 				const isMe = msg.authorId === myId;
-				const name = msg.author?.name ?? msg.author?.email ?? '?';
+				const name = msg.author?.name ?? msg.author?.publicId ?? '?';
 				return (
 					<div
 						key={msg._id}
