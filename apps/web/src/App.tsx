@@ -1,8 +1,17 @@
+import { useConvexAuth } from 'convex/react';
+import AuthPage from './pages/AuthPage';
+import ChatPage from './pages/ChatPage';
+
 export default function App() {
-  return (
-    <main>
-      <h1>Colossus</h1>
-      <p>React + Vite baseline for colossus.</p>
-    </main>
-  );
+	const { isAuthenticated, isLoading } = useConvexAuth();
+
+	if (isLoading) {
+		return (
+			<div className="h-screen flex items-center justify-center text-slate-400 text-sm">
+				Загрузка...
+			</div>
+		);
+	}
+
+	return isAuthenticated ? <ChatPage /> : <AuthPage />;
 }
