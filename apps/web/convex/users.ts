@@ -21,6 +21,21 @@ export const list = query({
 	},
 });
 
+export const findByEmail = query({
+	args: { email: v.string() },
+	handler: async (ctx, { email }) => {
+		const userId = await getAuthUserId(ctx);
+		if (userId === null) return null;
+		const all = await ctx.db.query('users').collect();
+		const found = all.find(
+			(u) =>
+				u._id !== userId &&
+				(u.email ?? '').toLowerCase() === email.toLowerCase().trim(),
+		);
+		return found ?? null;
+	},
+});
+
 export const search = query({
 	args: { query: v.string() },
 	handler: async (ctx, { query: q }) => {

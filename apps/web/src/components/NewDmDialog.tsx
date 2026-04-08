@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
-import { X, Search } from 'lucide-react';
+import { X } from 'lucide-react';
 
 type Props = {
 	onClose: () => void;
@@ -9,24 +9,41 @@ type Props = {
 };
 
 export default function NewDmDialog({ onClose, onSelect }: Props) {
-	const [query, setQuery] = useState('');
-	const users = useQuery(
-		api.users.search,
-		query.trim().length > 0 ? { query } : 'skip',
-	);
-	const getOrCreate = useMutation(api.conversations.getOrCreate);
+	const [email, setEmail] = useState('');
+	const [submitted, setSubmitted] = useState(false);
 	const [loading, setLoading] = useState(false);
 
-	async function handleSelect(userId: string) {
+	const user = useQuery(
+		api.users.findByEmail,
+		submitted && email.trim().length > 0 ? { email: email.trim() } : 'skip',
+	);
+	const getOrCreate = useMutation(api.conversations.getOrCreate);
+
+	async function handleSubmit(e: React.FormEvent) {
+		e.preventDefault();
+		if (!email.trim()) return;
+		setSubmitted(true);
+	}
+
+	async function handleStartChat() {
+		if (!user) return;
 		setLoading(true);
 		try {
-			const convId = await getOrCreate({ otherUserId: userId as never });
+			const convId = await getOrCreate({ otherUserId: user._id as never });
 			onSelect(convId as string);
 			onClose();
 		} finally {
 			setLoading(false);
 		}
 	}
+
+	function handleEmailChange(value: string) {
+		setEmail(value);
+		setSubmitted(false);
+	}
+
+	const notFound = submitted && user === null;
+	const found = submitted && user !== null && user !== undefined;
 
 	return (
 		<div
@@ -46,61 +63,65 @@ export default function NewDmDialog({ onClose, onSelect }: Props) {
 					</button>
 				</div>
 
-				<div className="px-4 py-3 border-b">
-					<div className="flex items-center gap-2 rounded-md border bg-background px-3 h-9 focus-within:ring-[3px]">
-						<Search size={14} className="text-muted-foreground shrink-0" />
+				<form onSubmit={handleSubmit} className="px-4 py-4 flex flex-col gap-3">
+					<div className="flex flex-col gap-1.5">
+						<label className="text-sm font-medium" htmlFor="dm-email">
+							Email
+						</label>
 						<input
+							id="dm-email"
 							autoFocus
-							type="text"
-							value={query}
-							onChange={(e) => setQuery(e.target.value)}
-							placeholder="Поиск по имени или email..."
-							className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+							type="email"
+							value={email}
+							onChange={(e) => handleEmailChange(e.target.value)}
+							placeholder="user@example.com"
+							className="flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm outline-none focus-visible:ring-[3px] placeholder:text-muted-foreground"
 						/>
 					</div>
-				</div>
 
-				<ul className="max-h-64 overflow-y-auto py-1">
-					{query.trim().length === 0 && (
-						<li className="px-4 py-3 text-sm text-muted-foreground text-center">
-							Начни вводить имя или email
-						</li>
+					{notFound && (
+						<p className="text-sm text-destructive">
+							Пользователь с таким email не найден
+						</p>
 					)}
-					{query.trim().length > 0 && users === undefined && (
-						<li className="px-4 py-3 text-sm text-muted-foreground">
-							Поиск...
-						</li>
+
+					{found && (
+						<div className="flex items-center gap-3 rounded-md border bg-muted/50 px-3 py-2.5">
+							<span className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold shrink-0">
+								{(user.name ?? user.email ?? '?').charAt(0).toUpperCase()}
+							</span>
+							<div className="min-w-0">
+								<p className="text-sm font-medium truncate">
+									{user.name ?? user.email}
+								</p>
+								{user.name && (
+									<p className="text-xs text-muted-foreground truncate">
+										{user.email}
+									</p>
+								)}
+							</div>
+						</div>
 					)}
-					{query.trim().length > 0 && users?.length === 0 && (
-						<li className="px-4 py-3 text-sm text-muted-foreground">
-							Никого не найдено
-						</li>
+
+					{!found ? (
+						<button
+							type="submit"
+							disabled={!email.trim()}
+							className="inline-flex items-center justify-center h-9 rounded-md bg-primary text-primary-foreground text-sm font-medium shadow-xs hover:bg-primary/90 disabled:opacity-50 transition-colors"
+						>
+							Найти
+						</button>
+					) : (
+						<button
+							type="button"
+							disabled={loading}
+							onClick={handleStartChat}
+							className="inline-flex items-center justify-center h-9 rounded-md bg-primary text-primary-foreground text-sm font-medium shadow-xs hover:bg-primary/90 disabled:opacity-50 transition-colors"
+						>
+							{loading ? 'Создание...' : 'Начать диалог'}
+						</button>
 					)}
-					{users?.map((user) => {
-						const name = user.name ?? user.email ?? 'Без имени';
-						return (
-							<li key={user._id}>
-								<button
-									disabled={loading}
-									onClick={() => handleSelect(user._id)}
-									className="w-full text-left px-4 py-2.5 flex items-center gap-3 hover:bg-accent transition-colors rounded-sm mx-0"
-								>
-									<span className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold shrink-0">
-										{name.charAt(0).toUpperCase()}
-									</span>
-									<div className="min-w-0">
-										<p className="text-sm font-medium truncate">{name}</p>
-										{user.name && (
-											<p className="text-xs text-muted-foreground truncate">
-												{user.email}
-											</p>
-										)}
-									</div>
-								</button>
-							</li>
-						);
-					})}
-				</ul>
+				</form>
 			</div>
 		</div>
 	);
