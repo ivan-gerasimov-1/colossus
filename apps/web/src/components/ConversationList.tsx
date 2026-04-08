@@ -100,7 +100,6 @@ function UserDropdown({
 									title={t.label}
 								>
 									{t.icon}
-									<span>{t.label}</span>
 								</button>
 							))}
 						</div>
