@@ -1,9 +1,9 @@
-import { mutation } from './_generated/server';
+import { internalMutation } from './_generated/server';
 import { v } from 'convex/values';
 import { generateUniquePublicId } from './utils';
 import { encrypt, validateMasterKey } from './crypto';
 
-export const migratePublicIds = mutation({
+export const migratePublicIds = internalMutation({
 	args: {},
 	handler: async (ctx) => {
 		const users = await ctx.db.query('users').collect();
@@ -21,7 +21,7 @@ export const migratePublicIds = mutation({
 	},
 });
 
-export const removePlaintextFromMessages = mutation({
+export const removePlaintextFromMessages = internalMutation({
 	args: {},
 	handler: async (ctx) => {
 		const messages = await ctx.db.query('messages').collect();
