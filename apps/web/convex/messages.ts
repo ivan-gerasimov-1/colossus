@@ -25,17 +25,8 @@ export const list = query({
 		return Promise.all(
 			msgs.map(async (msg) => {
 				const author = await ctx.db.get(msg.authorId);
-				let text = msg.text;
 
-				// Decrypt if encrypted
-				if (msg.encryptedText) {
-					try {
-						text = await decrypt(msg.encryptedText, masterKey);
-					} catch (e) {
-						console.error('Failed to decrypt message:', e);
-						text = '[Encrypted - decryption failed]';
-					}
-				}
+				const text = await decrypt(msg.encryptedText, masterKey);
 
 				return { ...msg, author, text };
 			}),
@@ -59,7 +50,6 @@ export const send = mutation({
 		await ctx.db.insert('messages', {
 			conversationId,
 			authorId: userId,
-			text,
 			encryptedText,
 			createdAt: Date.now(),
 		});

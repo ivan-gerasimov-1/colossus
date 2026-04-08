@@ -21,33 +21,23 @@ export const migratePublicIds = mutation({
 	},
 });
 
-export const migrateMessageEncryption = mutation({
-	args: { masterKey: v.string() },
-	handler: async (ctx, { masterKey }) => {
-		if (!validateMasterKey(masterKey)) {
-			throw new Error('Invalid master key format');
-		}
-
+export const removePlaintextFromMessages = mutation({
+	args: {},
+	handler: async (ctx) => {
 		const messages = await ctx.db.query('messages').collect();
 		let migrated = 0;
-		let skipped = 0;
 
 		for (const message of messages) {
-			// Skip if already encrypted
-			if (message.encryptedText) {
-				skipped++;
-				continue;
-			}
-
-			// Encrypt the message text
-			const encryptedText = await encrypt(message.text, masterKey);
-
-			// Update with encrypted text
-			await ctx.db.patch(message._id, { encryptedText });
-
+			// Replace document without text field
+			await ctx.db.replace(message._id, {
+				conversationId: message.conversationId,
+				authorId: message.authorId,
+				encryptedText: message.encryptedText,
+				createdAt: message.createdAt,
+			});
 			migrated++;
 		}
 
-		return { migrated, skipped, total: messages.length };
+		return { migrated, total: messages.length };
 	},
 });
