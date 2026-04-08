@@ -5,8 +5,11 @@ import { ConvexReactClient } from 'convex/react';
 
 import App from './App';
 import './index.css';
+import { registerSW } from 'virtual:pwa-register';
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
+
+registerSW();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
 	<React.StrictMode>
