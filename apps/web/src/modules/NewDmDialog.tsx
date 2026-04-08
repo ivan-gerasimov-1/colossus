@@ -28,7 +28,7 @@ export default function NewDmDialog({ onClose, onSelect }: Props) {
 				: 'skip',
 		),
 	);
-	const { mutate: getOrCreate, isPending } = useMutation({
+	const { mutateAsync: getOrCreate, isPending } = useMutation({
 		mutationFn: useConvexMutation(api.conversations.getOrCreate),
 	});
 
@@ -40,8 +40,10 @@ export default function NewDmDialog({ onClose, onSelect }: Props) {
 
 	async function handleStartChat() {
 		if (!user) return;
-		getOrCreate({ otherUserId: user._id as never });
-		onSelect(user._id as string);
+		const conversationId = await getOrCreate({
+			otherUserId: user._id as never,
+		});
+		onSelect(conversationId as string);
 		onClose();
 	}
 
