@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { convexQuery } from '@convex-dev/react-query';
 import { api } from '../../convex/_generated/api';
-import ConversationList from '../components/ConversationList';
-import MessageList from '../components/MessageList';
-import MessageInput from '../components/MessageInput';
-import NewDmDialog from '../components/NewDmDialog';
+import ConversationList from '../modules/ConversationList';
+import MessageList from '../modules/MessageList';
+import MessageInput from '../modules/MessageInput';
+import NewDmDialog from '../modules/NewDmDialog';
+import { Button } from '../components/ui/button';
 import { MessageSquareDashed, ArrowLeft } from 'lucide-react';
 
 type MobileView = 'list' | 'chat';
@@ -51,12 +52,14 @@ export default function ChatPage() {
 				{/* Header — visible on mobile only when chat is open */}
 				{selectedConvId && (
 					<header className="h-14 px-4 border-b flex items-center gap-3 shrink-0 md:border-b">
-						<button
+						<Button
+							variant="ghost"
+							size="icon"
 							onClick={() => setMobileView('list')}
-							className="md:hidden inline-flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent transition-colors text-muted-foreground"
+							className="md:hidden h-7 w-7"
 						>
 							<ArrowLeft size={16} />
-						</button>
+						</Button>
 						<span className="font-semibold text-sm truncate">{otherName}</span>
 					</header>
 				)}

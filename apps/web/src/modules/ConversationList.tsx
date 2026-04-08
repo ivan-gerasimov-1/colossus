@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { convexQuery } from '@convex-dev/react-query';
 import { api } from '../../convex/_generated/api';
 import { Plus } from 'lucide-react';
+import { Button } from '../components/ui/button';
 import SettingsDialog from './SettingsDialog';
 import UserDropdown from './UserDropdown';
 
@@ -38,13 +39,15 @@ export default function ConversationList({
 						initial={initial}
 						onOpenSettings={() => setShowSettings(true)}
 					/>
-					<button
+					<Button
+						variant="ghost"
+						size="icon"
 						onClick={onNewDm}
-						className="ml-auto inline-flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
+						className="ml-auto h-7 w-7"
 						title="Новый чат"
 					>
 						<Plus size={16} />
-					</button>
+					</Button>
 				</div>
 
 				<ul className="flex-1 overflow-y-auto py-1">

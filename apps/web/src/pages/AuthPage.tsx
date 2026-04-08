@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useAuthActions } from '@convex-dev/auth/react';
+import { Input } from '../components/ui/input';
+import { Button } from '../components/ui/button';
 
 type Mode = 'signIn' | 'signUp';
 
@@ -56,13 +58,11 @@ export default function AuthPage() {
 							<label className="text-sm font-medium" htmlFor="name">
 								Имя
 							</label>
-							<input
+							<Input
 								id="name"
 								name="name"
-								type="text"
 								required
 								autoComplete="name"
-								className="flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:ring-[3px] placeholder:text-muted-foreground disabled:opacity-50"
 								placeholder="Иван Иванов"
 							/>
 						</div>
@@ -72,13 +72,12 @@ export default function AuthPage() {
 						<label className="text-sm font-medium" htmlFor="email">
 							Email
 						</label>
-						<input
+						<Input
 							id="email"
 							name="email"
 							type="email"
 							required
 							autoComplete="email"
-							className="flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:ring-[3px] placeholder:text-muted-foreground disabled:opacity-50"
 							placeholder="you@example.com"
 						/>
 					</div>
@@ -87,7 +86,7 @@ export default function AuthPage() {
 						<label className="text-sm font-medium" htmlFor="password">
 							Пароль
 						</label>
-						<input
+						<Input
 							id="password"
 							name="password"
 							type="password"
@@ -95,7 +94,6 @@ export default function AuthPage() {
 							autoComplete={
 								mode === 'signIn' ? 'current-password' : 'new-password'
 							}
-							className="flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:ring-[3px] placeholder:text-muted-foreground disabled:opacity-50"
 							placeholder="••••••••"
 						/>
 					</div>
@@ -106,17 +104,13 @@ export default function AuthPage() {
 						</p>
 					)}
 
-					<button
-						type="submit"
-						disabled={loading}
-						className="mt-1 inline-flex items-center justify-center h-9 rounded-md bg-primary text-primary-foreground text-sm font-medium shadow-xs hover:bg-primary/90 disabled:opacity-50 transition-colors"
-					>
+					<Button type="submit" disabled={loading} className="mt-1">
 						{loading
 							? 'Загрузка...'
 							: mode === 'signIn'
 								? 'Войти'
 								: 'Зарегистрироваться'}
-					</button>
+					</Button>
 				</form>
 			</div>
 		</div>

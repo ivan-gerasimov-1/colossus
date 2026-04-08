@@ -2,7 +2,14 @@ import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query';
 import { api } from '../../convex/_generated/api';
-import { X } from 'lucide-react';
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from '../components/ui/dialog';
+import { Input } from '../components/ui/input';
+import { Button } from '../components/ui/button';
 
 type Props = {
 	onClose: () => void;
@@ -47,36 +54,23 @@ export default function NewDmDialog({ onClose, onSelect }: Props) {
 	const found = submitted && user !== null && user !== undefined;
 
 	return (
-		<div
-			className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-			onClick={(e) => {
-				if (e.target === e.currentTarget) onClose();
-			}}
-		>
-			<div className="bg-card border rounded-lg shadow-lg w-full max-w-sm mx-4">
-				<div className="flex items-center justify-between px-4 py-3 border-b">
-					<h2 className="font-semibold text-sm">Новое сообщение</h2>
-					<button
-						onClick={onClose}
-						className="inline-flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent transition-colors text-muted-foreground"
-					>
-						<X size={16} />
-					</button>
-				</div>
+		<Dialog open onOpenChange={(open) => !open && onClose()}>
+			<DialogContent className="max-w-sm">
+				<DialogHeader>
+					<DialogTitle>Новое сообщение</DialogTitle>
+				</DialogHeader>
 
-				<form onSubmit={handleSubmit} className="px-4 py-4 flex flex-col gap-3">
+				<form onSubmit={handleSubmit} className="flex flex-col gap-3">
 					<div className="flex flex-col gap-1.5">
 						<label className="text-sm font-medium" htmlFor="dm-publicId">
 							Публичный ID
 						</label>
-						<input
+						<Input
 							id="dm-publicId"
 							autoFocus
-							type="text"
 							value={publicId}
 							onChange={(e) => handlePublicIdChange(e.target.value)}
 							placeholder="cosmic-nebula-42"
-							className="flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm outline-none focus-visible:ring-[3px] placeholder:text-muted-foreground"
 						/>
 					</div>
 
@@ -103,25 +97,20 @@ export default function NewDmDialog({ onClose, onSelect }: Props) {
 					)}
 
 					{!found ? (
-						<button
-							type="submit"
-							disabled={!publicId.trim()}
-							className="inline-flex items-center justify-center h-9 rounded-md bg-primary text-primary-foreground text-sm font-medium shadow-xs hover:bg-primary/90 disabled:opacity-50 transition-colors"
-						>
+						<Button type="submit" disabled={!publicId.trim()}>
 							Найти
-						</button>
+						</Button>
 					) : (
-						<button
+						<Button
 							type="button"
 							disabled={isPending}
 							onClick={handleStartChat}
-							className="inline-flex items-center justify-center h-9 rounded-md bg-primary text-primary-foreground text-sm font-medium shadow-xs hover:bg-primary/90 disabled:opacity-50 transition-colors"
 						>
 							{isPending ? 'Создание...' : 'Начать диалог'}
-						</button>
+						</Button>
 					)}
 				</form>
-			</div>
-		</div>
+			</DialogContent>
+		</Dialog>
 	);
 }
