@@ -68,7 +68,7 @@ export default function NewDmDialog({ onClose, onSelect }: Props) {
 				<form onSubmit={handleSubmit} className="px-4 py-4 flex flex-col gap-3">
 					<div className="flex flex-col gap-1.5">
 						<label className="text-sm font-medium" htmlFor="dm-publicId">
-							Public ID
+							Публичный ID
 						</label>
 						<input
 							id="dm-publicId"
@@ -82,9 +82,7 @@ export default function NewDmDialog({ onClose, onSelect }: Props) {
 					</div>
 
 					{notFound && (
-						<p className="text-sm text-destructive">
-							Пользователь с таким public ID не найден
-						</p>
+						<p className="text-sm text-destructive">Пользователь не найден</p>
 					)}
 
 					{found && (
