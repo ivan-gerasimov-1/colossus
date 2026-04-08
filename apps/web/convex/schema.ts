@@ -28,6 +28,7 @@ export default defineSchema({
 		conversationId: v.id('conversations'),
 		authorId: v.id('users'),
 		text: v.string(),
+		encryptedText: v.optional(v.string()),
 		createdAt: v.number(),
 	}).index('by_conversation', ['conversationId', 'createdAt']),
 });
