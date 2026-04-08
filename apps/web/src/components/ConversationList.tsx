@@ -1,7 +1,9 @@
 import { useQuery } from 'convex/react';
 import { useAuthActions } from '@convex-dev/auth/react';
 import { api } from '../../convex/_generated/api';
-import { Plus, LogOut } from 'lucide-react';
+import { Plus, LogOut, Sun, Moon, Monitor } from 'lucide-react';
+import { useTheme } from '../lib/theme';
+import type { Theme } from '../lib/theme';
 
 type Props = {
 	selectedId: string | null;
@@ -10,6 +12,14 @@ type Props = {
 	className?: string;
 };
 
+const THEME_CYCLE: Theme[] = ['system', 'light', 'dark'];
+
+function ThemeIcon({ theme }: { theme: Theme }) {
+	if (theme === 'light') return <Sun size={14} />;
+	if (theme === 'dark') return <Moon size={14} />;
+	return <Monitor size={14} />;
+}
+
 export default function ConversationList({
 	selectedId,
 	onSelect,
@@ -17,8 +27,14 @@ export default function ConversationList({
 	className = '',
 }: Props) {
 	const { signOut } = useAuthActions();
+	const { theme, setTheme } = useTheme();
 	const me = useQuery(api.users.me);
 	const conversations = useQuery(api.conversations.listMine);
+
+	function cycleTheme() {
+		const idx = THEME_CYCLE.indexOf(theme);
+		setTheme(THEME_CYCLE[(idx + 1) % THEME_CYCLE.length]);
+	}
 
 	return (
 		<aside className={`flex flex-col border-r bg-background ${className}`}>
@@ -78,6 +94,13 @@ export default function ConversationList({
 					</p>
 					<p className="text-xs text-muted-foreground truncate">{me?.email}</p>
 				</div>
+				<button
+					onClick={cycleTheme}
+					className="inline-flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
+					title={`Тема: ${theme}`}
+				>
+					<ThemeIcon theme={theme} />
+				</button>
 				<button
 					onClick={() => signOut()}
 					className="inline-flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
