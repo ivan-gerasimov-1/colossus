@@ -1,18 +1,32 @@
 {
-  "name": "colossus",
-  "private": true,
-  "version": "0.1.0",
-  "packageManager": "npm",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
-  "scripts": {
-    "dev:web": "npm run dev --workspace @colossus/web",
-    "dev:site": "npm run dev --workspace @colossus/site",
-    "dev:api": "npm run dev --workspace @colossus/api",
-    "build": "npm run build --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present"
-  }
+	"name": "colossus",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"workspaces": [
+		"apps/*",
+		"packages/*"
+	],
+	"engines": {
+		"node": "24",
+		"npm": "11"
+	},
+	"devEngines": {
+		"runtime": {
+			"name": "node",
+			"version": "24"
+		},
+		"packageManager": {
+			"name": "npm",
+			"version": "11"
+		}
+	},
+	"scripts": {
+		"dev:web": "npm run dev --workspace @colossus/web",
+		"dev:site": "npm run dev --workspace @colossus/site",
+		"dev:api": "npm run dev --workspace @colossus/api",
+		"build": "npm run build --workspaces --if-present",
+		"lint": "npm run lint --workspaces --if-present",
+		"test": "npm run test --workspaces --if-present"
+	}
 }
