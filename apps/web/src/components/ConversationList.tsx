@@ -1,7 +1,8 @@
+import { useEffect, useRef, useState } from 'react';
 import { useQuery } from 'convex/react';
 import { useAuthActions } from '@convex-dev/auth/react';
 import { api } from '../../convex/_generated/api';
-import { Plus, LogOut, Sun, Moon, Monitor } from 'lucide-react';
+import { Plus, LogOut, Sun, Moon, Monitor, ChevronUp } from 'lucide-react';
 import { useTheme } from '../lib/theme';
 import type { Theme } from '../lib/theme';
 
@@ -12,12 +13,99 @@ type Props = {
 	className?: string;
 };
 
-const THEME_CYCLE: Theme[] = ['system', 'light', 'dark'];
+const THEMES: { value: Theme; label: string; icon: React.ReactNode }[] = [
+	{ value: 'system', label: 'Системная', icon: <Monitor size={14} /> },
+	{ value: 'light', label: 'Светлая', icon: <Sun size={14} /> },
+	{ value: 'dark', label: 'Тёмная', icon: <Moon size={14} /> },
+];
 
-function ThemeIcon({ theme }: { theme: Theme }) {
-	if (theme === 'light') return <Sun size={14} />;
-	if (theme === 'dark') return <Moon size={14} />;
-	return <Monitor size={14} />;
+type UserDropdownProps = {
+	name: string;
+	email: string | undefined;
+	initial: string;
+};
+
+function UserDropdown({ name, email, initial }: UserDropdownProps) {
+	const { signOut } = useAuthActions();
+	const { theme, setTheme } = useTheme();
+	const [open, setOpen] = useState(false);
+	const ref = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		if (!open) return;
+		function handleClick(e: MouseEvent) {
+			if (ref.current && !ref.current.contains(e.target as Node)) {
+				setOpen(false);
+			}
+		}
+		document.addEventListener('mousedown', handleClick);
+		return () => document.removeEventListener('mousedown', handleClick);
+	}, [open]);
+
+	return (
+		<div ref={ref} className="relative">
+			<button
+				onClick={() => setOpen((v) => !v)}
+				className="inline-flex items-center gap-1.5 h-7 px-1.5 rounded-md hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
+			>
+				<span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold shrink-0">
+					{initial}
+				</span>
+				<span className="text-xs font-medium text-foreground max-w-24 truncate">
+					{name}
+				</span>
+				<ChevronUp
+					size={12}
+					className={`transition-transform ${open ? '' : 'rotate-180'}`}
+				/>
+			</button>
+
+			{open && (
+				<div className="absolute top-full left-0 mt-1.5 w-56 rounded-lg border bg-card shadow-md z-10 py-1">
+					{/* User info */}
+					<div className="px-3 py-2.5 border-b">
+						<p className="text-xs font-semibold truncate">{name}</p>
+						{email && (
+							<p className="text-xs text-muted-foreground truncate">{email}</p>
+						)}
+					</div>
+
+					{/* Theme */}
+					<div className="px-3 py-2 border-b">
+						<div className="flex gap-1">
+							{THEMES.map((t) => (
+								<button
+									key={t.value}
+									onClick={() => setTheme(t.value)}
+									className={`flex-1 inline-flex flex-col items-center gap-1 py-1.5 rounded-md text-xs transition-colors ${
+										theme === t.value
+											? 'bg-accent text-accent-foreground font-medium'
+											: 'hover:bg-accent/50 text-muted-foreground'
+									}`}
+									title={t.label}
+								>
+									{t.icon}
+									<span>{t.label}</span>
+								</button>
+							))}
+						</div>
+					</div>
+
+					{/* Sign out */}
+					<button
+						onClick={() => {
+							setOpen(false);
+							signOut();
+						}}
+						className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
+					>
+						<LogOut size={14} />
+						Выйти
+					</button>
+				</div>
+			)}
+		</div>
+	);
 }
 
 export default function ConversationList({
@@ -26,20 +114,16 @@ export default function ConversationList({
 	onNewDm,
 	className = '',
 }: Props) {
-	const { signOut } = useAuthActions();
-	const { theme, setTheme } = useTheme();
 	const me = useQuery(api.users.me);
 	const conversations = useQuery(api.conversations.listMine);
 
-	function cycleTheme() {
-		const idx = THEME_CYCLE.indexOf(theme);
-		setTheme(THEME_CYCLE[(idx + 1) % THEME_CYCLE.length]);
-	}
+	const displayName = me?.name ?? me?.email ?? '...';
+	const initial = displayName.charAt(0).toUpperCase();
 
 	return (
 		<aside className={`flex flex-col border-r bg-background ${className}`}>
-			<div className="px-4 h-14 border-b flex items-center shrink-0">
-				<span className="font-semibold text-sm">Сообщения</span>
+			<div className="px-3 h-14 border-b flex items-center shrink-0">
+				<UserDropdown name={displayName} email={me?.email} initial={initial} />
 				<button
 					onClick={onNewDm}
 					className="ml-auto inline-flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
@@ -83,32 +167,6 @@ export default function ConversationList({
 					);
 				})}
 			</ul>
-
-			<div className="px-4 py-3 border-t flex items-center gap-2 shrink-0">
-				<span className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-xs font-semibold shrink-0">
-					{(me?.name ?? me?.email ?? '?').charAt(0).toUpperCase()}
-				</span>
-				<div className="flex-1 min-w-0">
-					<p className="text-xs font-medium truncate">
-						{me?.name ?? me?.email ?? '...'}
-					</p>
-					<p className="text-xs text-muted-foreground truncate">{me?.email}</p>
-				</div>
-				<button
-					onClick={cycleTheme}
-					className="inline-flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
-					title={`Тема: ${theme}`}
-				>
-					<ThemeIcon theme={theme} />
-				</button>
-				<button
-					onClick={() => signOut()}
-					className="inline-flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
-					title="Выйти"
-				>
-					<LogOut size={14} />
-				</button>
-			</div>
 		</aside>
 	);
 }
