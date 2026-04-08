@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useMutation } from 'convex/react';
+import { useMutation } from '@tanstack/react-query';
+import { useConvexMutation } from '@convex-dev/react-query';
 import { api } from '../../convex/_generated/api';
 import { SendHorizonal } from 'lucide-react';
 
@@ -8,22 +9,18 @@ type Props = {
 };
 
 export default function MessageInput({ conversationId }: Props) {
-	const send = useMutation(api.messages.send);
+	const { mutate: send, isPending } = useMutation({
+		mutationFn: useConvexMutation(api.messages.send),
+	});
 	const [text, setText] = useState('');
-	const [loading, setLoading] = useState(false);
 
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
 		const trimmed = text.trim();
-		if (!trimmed || loading) return;
+		if (!trimmed || isPending) return;
 
-		setLoading(true);
-		try {
-			await send({ conversationId: conversationId as never, text: trimmed });
-			setText('');
-		} finally {
-			setLoading(false);
-		}
+		send({ conversationId: conversationId as never, text: trimmed });
+		setText('');
 	}
 
 	function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -46,7 +43,7 @@ export default function MessageInput({ conversationId }: Props) {
 				/>
 				<button
 					type="submit"
-					disabled={!text.trim() || loading}
+					disabled={!text.trim() || isPending}
 					className="text-foreground disabled:text-muted-foreground hover:text-foreground/70 transition-colors mb-0.5"
 				>
 					<SendHorizonal size={16} />

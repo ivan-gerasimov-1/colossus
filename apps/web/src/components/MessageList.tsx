@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { useQuery } from 'convex/react';
+import { useQuery } from '@tanstack/react-query';
+import { convexQuery } from '@convex-dev/react-query';
 import { api } from '../../convex/_generated/api';
 
 type Props = {
@@ -15,9 +16,11 @@ function formatTime(ts: number) {
 }
 
 export default function MessageList({ conversationId, myId }: Props) {
-	const messages = useQuery(api.messages.list, {
-		conversationId: conversationId as never,
-	});
+	const { data: messages } = useQuery(
+		convexQuery(api.messages.list, {
+			conversationId: conversationId as never,
+		}),
+	);
 	const bottomRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {

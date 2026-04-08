@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useMutation } from 'convex/react';
+import { useMutation } from '@tanstack/react-query';
+import { useConvexMutation } from '@convex-dev/react-query';
 import { api } from '../../convex/_generated/api';
 import { X } from 'lucide-react';
 
@@ -18,10 +19,11 @@ export default function SettingsDialog({
 }: Props) {
 	const [nameValue, setNameValue] = useState(name ?? '');
 	const [publicIdValue, setPublicIdValue] = useState(publicId);
-	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	const updateProfile = useMutation(api.users.updateProfile);
+	const { mutate: updateProfile, isPending } = useMutation({
+		mutationFn: useConvexMutation(api.users.updateProfile),
+	});
 
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
@@ -37,18 +39,11 @@ export default function SettingsDialog({
 			return;
 		}
 
-		setLoading(true);
-		try {
-			await updateProfile({
-				name: nameValue || undefined,
-				publicId: publicIdValue,
-			});
-			onClose();
-		} catch (err: any) {
-			setError(err.message || 'Ошибка при сохранении');
-		} finally {
-			setLoading(false);
-		}
+		updateProfile({
+			name: nameValue || undefined,
+			publicId: publicIdValue,
+		});
+		onClose();
 	}
 
 	return (
@@ -135,10 +130,10 @@ export default function SettingsDialog({
 
 					<button
 						type="submit"
-						disabled={loading}
+						disabled={isPending}
 						className="inline-flex items-center justify-center h-9 rounded-md bg-primary text-primary-foreground text-sm font-medium shadow-xs hover:bg-primary/90 disabled:opacity-50 transition-colors"
 					>
-						{loading ? 'Сохранение...' : 'Сохранить'}
+						{isPending ? 'Сохранение...' : 'Сохранить'}
 					</button>
 				</form>
 			</div>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useQuery, useMutation } from 'convex/react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { convexQuery, useConvexMutation } from '@convex-dev/react-query';
 import { api } from '../../convex/_generated/api';
 import { X } from 'lucide-react';
 
@@ -11,15 +12,18 @@ type Props = {
 export default function NewDmDialog({ onClose, onSelect }: Props) {
 	const [publicId, setPublicId] = useState('');
 	const [submitted, setSubmitted] = useState(false);
-	const [loading, setLoading] = useState(false);
 
-	const user = useQuery(
-		api.users.findByPublicId,
-		submitted && publicId.trim().length > 0
-			? { publicId: publicId.trim() }
-			: 'skip',
+	const { data: user } = useQuery(
+		convexQuery(
+			api.users.findByPublicId,
+			submitted && publicId.trim().length > 0
+				? { publicId: publicId.trim() }
+				: 'skip',
+		),
 	);
-	const getOrCreate = useMutation(api.conversations.getOrCreate);
+	const { mutate: getOrCreate, isPending } = useMutation({
+		mutationFn: useConvexMutation(api.conversations.getOrCreate),
+	});
 
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
@@ -29,14 +33,9 @@ export default function NewDmDialog({ onClose, onSelect }: Props) {
 
 	async function handleStartChat() {
 		if (!user) return;
-		setLoading(true);
-		try {
-			const convId = await getOrCreate({ otherUserId: user._id as never });
-			onSelect(convId as string);
-			onClose();
-		} finally {
-			setLoading(false);
-		}
+		getOrCreate({ otherUserId: user._id as never });
+		onSelect(user._id as string);
+		onClose();
 	}
 
 	function handlePublicIdChange(value: string) {
@@ -114,11 +113,11 @@ export default function NewDmDialog({ onClose, onSelect }: Props) {
 					) : (
 						<button
 							type="button"
-							disabled={loading}
+							disabled={isPending}
 							onClick={handleStartChat}
 							className="inline-flex items-center justify-center h-9 rounded-md bg-primary text-primary-foreground text-sm font-medium shadow-xs hover:bg-primary/90 disabled:opacity-50 transition-colors"
 						>
-							{loading ? 'Создание...' : 'Начать диалог'}
+							{isPending ? 'Создание...' : 'Начать диалог'}
 						</button>
 					)}
 				</form>

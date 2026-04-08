@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useQuery } from 'convex/react';
+import { useQuery } from '@tanstack/react-query';
+import { convexQuery } from '@convex-dev/react-query';
 import { api } from '../../convex/_generated/api';
 import ConversationList from '../components/ConversationList';
 import MessageList from '../components/MessageList';
@@ -10,8 +11,10 @@ import { MessageSquareDashed, ArrowLeft } from 'lucide-react';
 type MobileView = 'list' | 'chat';
 
 export default function ChatPage() {
-	const me = useQuery(api.users.me);
-	const conversations = useQuery(api.conversations.listMine);
+	const { data: me } = useQuery(convexQuery(api.users.me));
+	const { data: conversations } = useQuery(
+		convexQuery(api.conversations.listMine),
+	);
 	const [selectedConvId, setSelectedConvId] = useState<string | null>(null);
 	const [showNewDm, setShowNewDm] = useState(false);
 	const [mobileView, setMobileView] = useState<MobileView>('list');

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { useQuery } from 'convex/react';
+import { useQuery } from '@tanstack/react-query';
+import { convexQuery } from '@convex-dev/react-query';
 import { useAuthActions } from '@convex-dev/auth/react';
 import { api } from '../../convex/_generated/api';
 import {
@@ -140,8 +141,10 @@ export default function ConversationList({
 	onNewDm,
 	className = '',
 }: Props) {
-	const me = useQuery(api.users.me);
-	const conversations = useQuery(api.conversations.listMine);
+	const { data: me } = useQuery(convexQuery(api.users.me));
+	const { data: conversations } = useQuery(
+		convexQuery(api.conversations.listMine),
+	);
 	const [showSettings, setShowSettings] = useState(false);
 
 	const displayName = me?.name ?? me?.publicId ?? '...';
