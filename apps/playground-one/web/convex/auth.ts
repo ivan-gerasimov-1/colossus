@@ -16,7 +16,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 		async createOrUpdateUser(ctx: GenericMutationCtx<DataModel>, args) {
 			const existingUser = await ctx.db
 				.query('users')
-				.filter((q) => q.eq(q.field('email'), args.profile.email))
+				.withIndex('email', (q) => q.eq('email', args.profile.email))
 				.first();
 
 			if (existingUser) {
