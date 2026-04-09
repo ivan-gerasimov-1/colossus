@@ -7,6 +7,7 @@ If you encounter anything in the project that is surprising, unclear, or worth p
 ## General Guardrails
 
 - Use `npm` (with `npm workspaces`) as the package manager.
+- Install new packages with `--save-exact`.
 - Avoid editing automatically generated files.
 - If the user’s intent changes between turns, re-evaluate and switch to the matching skill before taking action.
 
