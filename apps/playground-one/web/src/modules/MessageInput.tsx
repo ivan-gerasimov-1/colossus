@@ -41,7 +41,7 @@ export default function MessageInput({ conversationId }: Props) {
 					onKeyDown={handleKeyDown}
 					rows={1}
 					placeholder="Напиши сообщение..."
-					className="flex-1 resize-none leading-5 max-h-32 min-h-[20px] border-0 shadow-none bg-transparent p-0 focus-visible:ring-0"
+					className="flex-1 resize-none max-h-32 border-0 shadow-none bg-transparent focus-visible:ring-0"
 				/>
 				<Button
 					type="submit"
