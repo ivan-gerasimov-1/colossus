@@ -28,6 +28,10 @@ export const getOrCreate = mutation({
 		const userId = await getAuthUserId(ctx);
 		if (userId === null) throw new Error('Not authenticated');
 
+		if (otherUserId === userId) {
+			throw new Error('Cannot create conversation with yourself');
+		}
+
 		const all = await ctx.db.query('conversations').collect();
 		const existing = all.find(
 			(c) =>
