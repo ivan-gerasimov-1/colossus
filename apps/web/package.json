@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "dependencies": {
+    "@auth/core": "^0.37.4",
     "@convex-dev/auth": "^0.0.91",
     "@convex-dev/react-query": "^0.1.0",
     "@radix-ui/react-dialog": "^1.1.15",
