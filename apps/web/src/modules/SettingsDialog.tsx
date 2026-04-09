@@ -10,6 +10,7 @@ import {
 } from '../components/ui/dialog';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
+import { Upload } from 'lucide-react';
 
 type Props = {
 	onClose: () => void;
@@ -26,31 +27,37 @@ export default function SettingsDialog({
 }: Props) {
 	const [nameValue, setNameValue] = useState(name ?? '');
 	const [publicIdValue, setPublicIdValue] = useState(publicId);
-	const [error, setError] = useState<string | null>(null);
+	const [publicIdError, setPublicIdError] = useState<string | null>(null);
 
-	const { mutate: updateProfile, isPending } = useMutation({
+	const hasPublicIdChanges = publicIdValue !== publicId;
+	const hasNameChanges = nameValue !== (name ?? '');
+
+	const { mutate: updatePublicId, isPending: isSavingPublicId } = useMutation({
 		mutationFn: useConvexMutation(api.users.updateProfile),
 	});
 
-	async function handleSubmit(e: React.FormEvent) {
-		e.preventDefault();
-		setError(null);
+	const { mutate: updateName, isPending: isSavingName } = useMutation({
+		mutationFn: useConvexMutation(api.users.updateProfile),
+	});
+
+	function handleSavePublicId() {
+		setPublicIdError(null);
 
 		// Клиентская валидация
 		if (publicIdValue.length < 3) {
-			setError('Минимум 3 символа');
+			setPublicIdError('Минимум 3 символа');
 			return;
 		}
 		if (!/^[a-zA-Z0-9.-]+$/.test(publicIdValue)) {
-			setError('Разрешены только буквы, цифры, дефисы и точки');
+			setPublicIdError('Разрешены только буквы, цифры, дефисы и точки');
 			return;
 		}
 
-		updateProfile({
-			name: nameValue || undefined,
-			publicId: publicIdValue,
-		});
-		onClose();
+		updatePublicId({ publicId: publicIdValue });
+	}
+
+	function handleSaveName() {
+		updateName({ name: nameValue || undefined, publicId: publicIdValue });
 	}
 
 	return (
@@ -60,7 +67,7 @@ export default function SettingsDialog({
 					<DialogTitle>Настройки</DialogTitle>
 				</DialogHeader>
 
-				<form onSubmit={handleSubmit} className="flex flex-col gap-3">
+				<div className="flex flex-col gap-3">
 					{/* Email - readonly */}
 					<div className="flex flex-col gap-1.5">
 						<label className="text-sm font-medium" htmlFor="settings-email">
@@ -96,12 +103,28 @@ export default function SettingsDialog({
 						<label className="text-sm font-medium" htmlFor="settings-publicId">
 							Публичный ID
 						</label>
-						<Input
-							id="settings-publicId"
-							value={publicIdValue}
-							onChange={(e) => setPublicIdValue(e.target.value)}
-							placeholder="cosmic.nebula.42"
-						/>
+						<div className="relative">
+							<Input
+								id="settings-publicId"
+								value={publicIdValue}
+								onChange={(e) => setPublicIdValue(e.target.value)}
+								placeholder="cosmic.nebula.42"
+								className="pr-10"
+							/>
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon"
+								disabled={isSavingPublicId || !hasPublicIdChanges}
+								onClick={handleSavePublicId}
+								className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+							>
+								<Upload size={14} />
+							</Button>
+						</div>
+						{publicIdError && (
+							<p className="text-sm text-destructive">{publicIdError}</p>
+						)}
 						<p className="text-xs text-muted-foreground">
 							Минимум 3 символа, только буквы, цифры, дефисы и точки
 						</p>
@@ -112,20 +135,27 @@ export default function SettingsDialog({
 						<label className="text-sm font-medium" htmlFor="settings-name">
 							Имя
 						</label>
-						<Input
-							id="settings-name"
-							value={nameValue}
-							onChange={(e) => setNameValue(e.target.value)}
-							placeholder="Ваше имя"
-						/>
+						<div className="relative">
+							<Input
+								id="settings-name"
+								value={nameValue}
+								onChange={(e) => setNameValue(e.target.value)}
+								placeholder="Ваше имя"
+								className="pr-10"
+							/>
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon"
+								disabled={isSavingName || !hasNameChanges}
+								onClick={handleSaveName}
+								className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+							>
+								<Upload size={14} />
+							</Button>
+						</div>
 					</div>
-
-					{error && <p className="text-sm text-destructive">{error}</p>}
-
-					<Button type="submit" disabled={isPending}>
-						{isPending ? 'Сохранение...' : 'Сохранить'}
-					</Button>
-				</form>
+				</div>
 			</DialogContent>
 		</Dialog>
 	);
