@@ -2,13 +2,12 @@ import { mutation, query } from './_generated/server';
 import { v } from 'convex/values';
 import { getAuthUserId } from '@convex-dev/auth/server';
 import { encrypt, decrypt } from './crypto';
-import { toPublicUser } from './users';
+import { toPublicUser, requireVerifiedUser } from './users';
 
 export const list = query({
 	args: { conversationId: v.id('conversations') },
 	handler: async (ctx, { conversationId }) => {
-		const userId = await getAuthUserId(ctx);
-		if (userId === null) return [];
+		const userId = await requireVerifiedUser(ctx);
 
 		const conversation = await ctx.db.get(conversationId);
 		if (!conversation || !conversation.participantIds.includes(userId)) {
@@ -49,15 +48,19 @@ export const list = query({
 export const send = mutation({
 	args: { conversationId: v.id('conversations'), text: v.string() },
 	handler: async (ctx, { conversationId, text }) => {
-		const userId = await getAuthUserId(ctx);
-		if (userId === null) throw new Error('Not authenticated');
+		const userId = await requireVerifiedUser(ctx);
+
+		if (!text.trim()) {
+			throw new Error('Message cannot be empty');
+		}
+
+		if (text.length > 10000) {
+			throw new Error('Message too long (max 10000 characters)');
+		}
 
 		const conversation = await ctx.db.get(conversationId);
 		if (!conversation || !conversation.participantIds.includes(userId)) {
-			console.warn(
-				`Unauthorized message send attempt: userId=${userId}, conversationId=${conversationId}`,
-			);
-			return;
+			throw new Error('Unauthorized or conversation not found');
 		}
 
 		const masterKey = process.env.ENCRYPTION_MASTER_KEY;
