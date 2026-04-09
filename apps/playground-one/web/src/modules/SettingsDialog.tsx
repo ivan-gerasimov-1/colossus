@@ -97,7 +97,7 @@ export default function SettingsDialog({
 	}
 
 	function handleSaveName() {
-		updateName({ name: nameValue || undefined, publicId: publicIdValue });
+		updateName({ name: nameValue || undefined });
 	}
 
 	return (

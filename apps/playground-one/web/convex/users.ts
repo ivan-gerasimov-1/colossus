@@ -80,35 +80,37 @@ export const search = query({
 export const updateProfile = mutation({
 	args: {
 		name: v.optional(v.string()),
-		publicId: v.string(),
+		publicId: v.optional(v.string()),
 	},
 	handler: async (ctx, { name, publicId }) => {
 		const userId = await getAuthUserId(ctx);
 		if (userId === null) throw new Error('Not authenticated');
 
-		// Валидация формата publicId: буквы, цифры, дефисы, точки, мин. длина 3
-		if (publicId.length < 3) {
-			throw new Error('Public ID must be at least 3 characters');
-		}
-		if (!/^[a-zA-Z0-9.-]+$/.test(publicId)) {
-			throw new Error(
-				'Public ID can only contain letters, numbers, hyphens, and dots',
-			);
-		}
+		if (publicId !== undefined) {
+			// Валидация формата publicId: буквы, цифры, дефисы, точки, мин. длина 3
+			if (publicId.length < 3) {
+				throw new Error('Public ID must be at least 3 characters');
+			}
+			if (!/^[a-zA-Z0-9.-]+$/.test(publicId)) {
+				throw new Error(
+					'Public ID can only contain letters, numbers, hyphens, and dots',
+				);
+			}
 
-		// Проверка уникальности publicId
-		const existing = await ctx.db
-			.query('users')
-			.withIndex('publicId', (q) => q.eq('publicId', publicId))
-			.first();
-		if (existing && existing._id !== userId) {
-			throw new Error('Public ID is already taken');
+			// Проверка уникальности publicId
+			const existing = await ctx.db
+				.query('users')
+				.withIndex('publicId', (q) => q.eq('publicId', publicId))
+				.first();
+			if (existing && existing._id !== userId) {
+				throw new Error('Public ID is already taken');
+			}
 		}
 
 		// Обновление
 		await ctx.db.patch(userId, {
 			...(name !== undefined && { name }),
-			publicId,
+			...(publicId !== undefined && { publicId }),
 		});
 
 		return null;
