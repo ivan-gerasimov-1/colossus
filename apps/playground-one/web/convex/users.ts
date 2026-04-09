@@ -3,6 +3,21 @@ import { v } from 'convex/values';
 import { getAuthUserId } from '@convex-dev/auth/server';
 import { Doc } from './_generated/dataModel';
 
+export async function requireVerifiedUser(ctx: any) {
+	const userId = await getAuthUserId(ctx);
+	if (userId === null) {
+		throw new Error('Not authenticated');
+	}
+	const user = await ctx.db.get(userId);
+	if (!user) {
+		throw new Error('User not found');
+	}
+	if (user.emailVerificationTime === undefined) {
+		throw new Error('Email verification required');
+	}
+	return userId;
+}
+
 export function toPublicUser(user: Doc<'users'>) {
 	return {
 		_id: user._id,
