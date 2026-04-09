@@ -69,7 +69,7 @@ export default function SettingsDialog({
 
 		const formData = new FormData();
 		formData.append('email', email);
-		formData.append('redirectTo', `${window.location.origin}/settings`);
+		formData.append('redirectTo', `${window.location.origin}/`);
 
 		try {
 			await signIn('resend', formData);
