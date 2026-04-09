@@ -2,6 +2,7 @@ import { mutation, query } from './_generated/server';
 import { v } from 'convex/values';
 import { getAuthUserId } from '@convex-dev/auth/server';
 import { encrypt, decrypt } from './crypto';
+import { toPublicUser } from './users';
 
 export const list = query({
 	args: { conversationId: v.id('conversations') },
@@ -39,7 +40,7 @@ export const list = query({
 
 				const text = await decrypt(msg.encryptedText, masterKey);
 
-				return { ...msg, author, text };
+				return { ...msg, author: author ? toPublicUser(author) : null, text };
 			}),
 		);
 	},

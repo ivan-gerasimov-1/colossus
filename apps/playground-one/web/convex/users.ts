@@ -1,13 +1,36 @@
 import { query, mutation } from './_generated/server';
 import { v } from 'convex/values';
 import { getAuthUserId } from '@convex-dev/auth/server';
+import { Doc } from './_generated/dataModel';
+
+export function toPublicUser(user: Doc<'users'>) {
+	return {
+		_id: user._id,
+		publicId: user.publicId,
+		name: user.name,
+		image: user.image,
+	};
+}
+
+function toMeUser(user: Doc<'users'>) {
+	return {
+		_id: user._id,
+		publicId: user.publicId,
+		name: user.name,
+		image: user.image,
+		email: user.email,
+		phone: user.phone,
+	};
+}
 
 export const me = query({
 	args: {},
 	handler: async (ctx) => {
 		const userId = await getAuthUserId(ctx);
 		if (userId === null) return null;
-		return ctx.db.get(userId);
+		const user = await ctx.db.get(userId);
+		if (!user) return null;
+		return toMeUser(user);
 	},
 });
 
@@ -17,7 +40,7 @@ export const list = query({
 		const userId = await getAuthUserId(ctx);
 		if (userId === null) return [];
 		const all = await ctx.db.query('users').collect();
-		return all.filter((u) => u._id !== userId);
+		return all.filter((u) => u._id !== userId).map(toPublicUser);
 	},
 });
 
@@ -31,7 +54,7 @@ export const findByPublicId = query({
 			.withIndex('publicId', (q) => q.eq('publicId', publicId))
 			.first();
 		if (!found || found._id === userId) return null;
-		return found;
+		return toPublicUser(found);
 	},
 });
 
@@ -43,12 +66,14 @@ export const search = query({
 		if (q.trim().length === 0) return [];
 		const lower = q.toLowerCase();
 		const all = await ctx.db.query('users').collect();
-		return all.filter((u) => {
-			if (u._id === userId) return false;
-			const name = (u.name ?? '').toLowerCase();
-			const publicId = (u.publicId ?? '').toLowerCase();
-			return name.includes(lower) || publicId.includes(lower);
-		});
+		return all
+			.filter((u) => {
+				if (u._id === userId) return false;
+				const name = (u.name ?? '').toLowerCase();
+				const publicId = (u.publicId ?? '').toLowerCase();
+				return name.includes(lower) || publicId.includes(lower);
+			})
+			.map(toPublicUser);
 	},
 });
 

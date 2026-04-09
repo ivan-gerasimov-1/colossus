@@ -1,6 +1,7 @@
 import { mutation, query } from './_generated/server';
 import { v } from 'convex/values';
 import { getAuthUserId } from '@convex-dev/auth/server';
+import { toPublicUser } from './users';
 
 export const listMine = query({
 	args: {},
@@ -15,7 +16,7 @@ export const listMine = query({
 			mine.map(async (conv) => {
 				const otherId = conv.participantIds.find((id) => id !== userId);
 				const other = otherId !== undefined ? await ctx.db.get(otherId) : null;
-				return { ...conv, other };
+				return { ...conv, other: other ? toPublicUser(other) : null };
 			}),
 		);
 	},
