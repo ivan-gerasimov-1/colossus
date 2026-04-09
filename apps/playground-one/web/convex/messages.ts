@@ -9,6 +9,14 @@ export const list = query({
 		const userId = await getAuthUserId(ctx);
 		if (userId === null) return [];
 
+		const conversation = await ctx.db.get(conversationId);
+		if (!conversation || !conversation.participantIds.includes(userId)) {
+			console.warn(
+				`Unauthorized message list attempt: userId=${userId}, conversationId=${conversationId}`,
+			);
+			return [];
+		}
+
 		const msgs = await ctx.db
 			.query('messages')
 			.withIndex('by_conversation', (q) =>
@@ -39,6 +47,14 @@ export const send = mutation({
 	handler: async (ctx, { conversationId, text }) => {
 		const userId = await getAuthUserId(ctx);
 		if (userId === null) throw new Error('Not authenticated');
+
+		const conversation = await ctx.db.get(conversationId);
+		if (!conversation || !conversation.participantIds.includes(userId)) {
+			console.warn(
+				`Unauthorized message send attempt: userId=${userId}, conversationId=${conversationId}`,
+			);
+			return;
+		}
 
 		const masterKey = process.env.ENCRYPTION_MASTER_KEY;
 		if (!masterKey) {
