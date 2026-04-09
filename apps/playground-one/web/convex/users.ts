@@ -79,7 +79,7 @@ export const search = query({
 
 export const updateProfile = mutation({
 	args: {
-		name: v.optional(v.string()),
+		name: v.optional(v.union(v.null(), v.string())),
 		publicId: v.optional(v.string()),
 	},
 	handler: async (ctx, { name, publicId }) => {
@@ -109,7 +109,8 @@ export const updateProfile = mutation({
 
 		// Обновление
 		await ctx.db.patch(userId, {
-			...(name !== undefined && { name }),
+			...(name !== undefined &&
+				(name === null ? { name: undefined } : { name })),
 			...(publicId !== undefined && { publicId }),
 		});
 
