@@ -20,13 +20,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 				.first();
 
 			if (existingUser) {
-				// If email is verified via magic link, update emailVerificationTime
-				if (args.profile.emailVerified) {
-					await ctx.db.patch(existingUser._id, {
-						emailVerificationTime: Date.now(),
-					});
-				}
-				return existingUser._id;
+				throw new Error('Email already registered');
 			}
 
 			const publicId = await generateUniquePublicId(ctx);
