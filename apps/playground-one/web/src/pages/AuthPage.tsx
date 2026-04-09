@@ -26,7 +26,10 @@ export default function AuthPage() {
 				...(mode === 'signUp' ? { name: data.get('name') as string } : {}),
 			});
 		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Что-то пошло не так');
+			console.error('Auth error:', err);
+			const errorMsg =
+				mode === 'signIn' ? 'Неверный email или пароль' : 'Ошибка регистрации';
+			setError(errorMsg);
 		} finally {
 			setLoading(false);
 		}
