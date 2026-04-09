@@ -2,6 +2,8 @@ import { convexAuth } from '@convex-dev/auth/server';
 import { Password } from '@convex-dev/auth/providers/Password';
 import Resend from '@auth/core/providers/resend';
 import { generateUniquePublicId } from './utils';
+import { GenericMutationCtx } from 'convex/server';
+import { DataModel } from './_generated/dataModel';
 
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 	providers: [
@@ -11,7 +13,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 		}),
 	],
 	callbacks: {
-		async createOrUpdateUser(ctx, args) {
+		async createOrUpdateUser(ctx: GenericMutationCtx<DataModel>, args) {
 			const existingUser = await ctx.db
 				.query('users')
 				.filter((q) => q.eq(q.field('email'), args.profile.email))
@@ -30,8 +32,6 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 			const publicId = await generateUniquePublicId(ctx);
 			const userId = await ctx.db.insert('users', {
 				email: args.profile.email,
-				name: args.profile.name,
-				image: args.profile.picture,
 				publicId,
 				emailVerificationTime: args.profile.emailVerified
 					? Date.now()
