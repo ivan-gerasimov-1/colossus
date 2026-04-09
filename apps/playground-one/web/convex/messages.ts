@@ -17,13 +17,16 @@ export const list = query({
 			return [];
 		}
 
+		// TODO: Implement cursor-based pagination with cursor/limit params for scalable history loading
+		// Current approach: take last 100 messages in desc order, then reverse for UI
 		const msgs = await ctx.db
 			.query('messages')
 			.withIndex('by_conversation', (q) =>
 				q.eq('conversationId', conversationId),
 			)
-			.order('asc')
-			.take(100);
+			.order('desc')
+			.take(100)
+			.then((msgs) => msgs.reverse());
 
 		const masterKey = process.env.ENCRYPTION_MASTER_KEY;
 		if (!masterKey) {
