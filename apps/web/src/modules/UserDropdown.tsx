@@ -1,5 +1,13 @@
 import { useAuthActions } from '@convex-dev/auth/react';
-import { Sun, Moon, Monitor, Settings, LogOut } from 'lucide-react';
+import {
+	Sun,
+	Moon,
+	Monitor,
+	Settings,
+	LogOut,
+	Copy,
+	Check,
+} from 'lucide-react';
 import { useTheme } from '../lib/theme';
 import type { Theme } from '../lib/theme';
 import {
@@ -11,6 +19,7 @@ import {
 	DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
 import { Button } from '../components/ui/button';
+import { useState } from 'react';
 
 const THEMES: { value: Theme; label: string; icon: React.ReactNode }[] = [
 	{ value: 'system', label: 'Системная', icon: <Monitor size={14} /> },
@@ -33,6 +42,13 @@ export default function UserDropdown({
 }: Props) {
 	const { signOut } = useAuthActions();
 	const { theme, setTheme } = useTheme();
+	const [copied, setCopied] = useState(false);
+
+	const handleCopyId = () => {
+		navigator.clipboard.writeText(publicId);
+		setCopied(true);
+		setTimeout(() => setCopied(false), 2000);
+	};
 
 	return (
 		<DropdownMenu>
@@ -50,7 +66,16 @@ export default function UserDropdown({
 				{/* User info */}
 				<DropdownMenuLabel>
 					<p className="font-semibold truncate">{name}</p>
-					<p className="text-muted-foreground truncate">@{publicId}</p>
+					<div className="flex items-center gap-2">
+						<p className="text-muted-foreground truncate">@{publicId}</p>
+						<button
+							onClick={handleCopyId}
+							className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
+							title="Скопировать ID"
+						>
+							{copied ? <Check size={14} /> : <Copy size={14} />}
+						</button>
+					</div>
 				</DropdownMenuLabel>
 				<DropdownMenuSeparator />
 
