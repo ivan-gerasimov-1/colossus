@@ -21,12 +21,5 @@
 			"version": "11"
 		}
 	},
-	"scripts": {
-		"dev:web": "npm run dev --workspace @colossus/web",
-		"dev:site": "npm run dev --workspace @colossus/site",
-		"dev:api": "npm run dev --workspace @colossus/api",
-		"build": "npm run build --workspaces --if-present",
-		"lint": "npm run lint --workspaces --if-present",
-		"test": "npm run test --workspaces --if-present"
-	}
+	"scripts": {}
 }
