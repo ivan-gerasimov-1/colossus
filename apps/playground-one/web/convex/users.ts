@@ -98,8 +98,7 @@ export const updateProfile = mutation({
 		publicId: v.optional(v.string()),
 	},
 	handler: async (ctx, { name, publicId }) => {
-		const userId = await getAuthUserId(ctx);
-		if (userId === null) throw new Error('Not authenticated');
+		const userId = await requireVerifiedUser(ctx);
 
 		if (publicId !== undefined) {
 			// Валидация формата publicId: буквы, цифры, дефисы, точки, мин. длина 3
