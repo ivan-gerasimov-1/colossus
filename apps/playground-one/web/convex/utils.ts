@@ -1,4 +1,5 @@
 import { customAlphabet } from 'nanoid';
+import { MutationCtx } from './_generated/server';
 
 const ADJECTIVES = [
 	'cosmic',
@@ -75,14 +76,14 @@ export function generatePublicId(): string {
 }
 
 export async function generateUniquePublicId(
-	ctx: any,
+	ctx: MutationCtx,
 	maxAttempts = 10,
 ): Promise<string> {
 	for (let i = 0; i < maxAttempts; i++) {
 		const publicId = generatePublicId();
 		const existing = await ctx.db
 			.query('users')
-			.withIndex('publicId', (q: any) => q.eq('publicId', publicId))
+			.withIndex('publicId', (q) => q.eq('publicId', publicId))
 			.first();
 		if (!existing) {
 			return publicId;
