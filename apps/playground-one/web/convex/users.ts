@@ -49,16 +49,6 @@ export const me = query({
 	},
 });
 
-export const list = query({
-	args: {},
-	handler: async (ctx) => {
-		const userId = await getAuthUserId(ctx);
-		if (userId === null) return [];
-		const all = await ctx.db.query('users').collect();
-		return all.filter((u) => u._id !== userId).map(toPublicUser);
-	},
-});
-
 export const findByPublicId = query({
 	args: { publicId: v.string() },
 	handler: async (ctx, { publicId }) => {
@@ -70,25 +60,6 @@ export const findByPublicId = query({
 			.first();
 		if (!found || found._id === userId) return null;
 		return toPublicUser(found);
-	},
-});
-
-export const search = query({
-	args: { query: v.string() },
-	handler: async (ctx, { query: q }) => {
-		const userId = await getAuthUserId(ctx);
-		if (userId === null) return [];
-		if (q.trim().length === 0) return [];
-		const lower = q.toLowerCase();
-		const all = await ctx.db.query('users').collect();
-		return all
-			.filter((u) => {
-				if (u._id === userId) return false;
-				const name = (u.name ?? '').toLowerCase();
-				const publicId = (u.publicId ?? '').toLowerCase();
-				return name.includes(lower) || publicId.includes(lower);
-			})
-			.map(toPublicUser);
 	},
 });
 
