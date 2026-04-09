@@ -6,11 +6,9 @@ import { generateUniquePublicId } from './utils';
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 	providers: [
 		Password,
-		Resend({}),
-		// 	{
-		// 	from:
-		// 		process.env.RESEND_FROM_EMAIL || 'noreply@codename-one.gerasimov.dev',
-		// }
+		Resend({
+			from: process.env.AUTH_RESEND_FROM,
+		}),
 	],
 	callbacks: {
 		async createOrUpdateUser(ctx, args) {
@@ -20,6 +18,12 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 				.first();
 
 			if (existingUser) {
+				// If email is verified via magic link, update emailVerificationTime
+				if (args.profile.emailVerified) {
+					await ctx.db.patch(existingUser._id, {
+						emailVerificationTime: Date.now(),
+					});
+				}
 				return existingUser._id;
 			}
 
@@ -29,6 +33,9 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 				name: args.profile.name,
 				image: args.profile.picture,
 				publicId,
+				emailVerificationTime: args.profile.emailVerified
+					? Date.now()
+					: undefined,
 			});
 
 			return userId;

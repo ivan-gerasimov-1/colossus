@@ -41,3 +41,20 @@ export const removePlaintextFromMessages = internalMutation({
 		return { migrated, total: messages.length };
 	},
 });
+
+export const requireEmailVerification = internalMutation({
+	args: {},
+	handler: async (ctx) => {
+		const users = await ctx.db.query('users').collect();
+		let migrated = 0;
+
+		for (const user of users) {
+			if (user.emailVerificationTime !== undefined) {
+				await ctx.db.patch(user._id, { emailVerificationTime: undefined });
+				migrated++;
+			}
+		}
+
+		return { migrated, total: users.length };
+	},
+});

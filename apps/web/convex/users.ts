@@ -89,3 +89,13 @@ export const updateProfile = mutation({
 		return null;
 	},
 });
+
+export const isEmailVerified = query({
+	args: {},
+	handler: async (ctx) => {
+		const userId = await getAuthUserId(ctx);
+		if (userId === null) return false;
+		const user = await ctx.db.get(userId);
+		return user?.emailVerificationTime !== undefined;
+	},
+});
