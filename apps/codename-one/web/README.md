@@ -1,3 +1,3 @@
 # Web App
 
-React + Vite app for Colossus.
+React + Vite app for Codename ONE.

@@ -1,8 +1,8 @@
 export function App() {
 	return (
 		<main>
-			<h1>Colossus</h1>
-			<p>React + Vite baseline for colossus.</p>
+			<h1>Codename ONE</h1>
+			<p>React + Vite baseline.</p>
 		</main>
 	);
 }
